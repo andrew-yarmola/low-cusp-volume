@@ -1,42 +1,10 @@
-try :
-    sys
-except :
-    import sys
-
-extra_path = ['/Applications/SnapPy.app/Contents/Resources/lib/python27.zip', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/plat-darwin', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/plat-mac', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/plat-mac/lib-scriptpackages', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/lib-tk', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/lib-old', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/lib-dynload', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/site-packages.zip', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/site-packages', \
- '/Applications/SnapPy.app/Contents/Resources/lib/python2.7/IPython/extensions', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python27.zip', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/plat-darwin', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/plat-mac', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/plat-mac/lib-scriptpackages', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/lib-tk', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/lib-old', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/lib-dynload', \
- '/Users/yarmola/Library/Python/2.7/lib/python/site-packages', \
- '/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/PyObjC', \
- '/Library/Python/2.7/site-packages'] 
-
-for d in extra_path :
-    if d not in sys.path :
-        sys.path.append(d)
-
+#!/usr/bin/env sage
 import os
 import glob
-from sage.all import * 
+import sys
 from itertools import combinations_with_replacement
-if 'snappy' not in sys.modules : 
-    from snappy import *
+from sage.all import *
+from snappy import *
 
 RR = RealField(200)
 CC = ComplexField(200)
@@ -57,9 +25,9 @@ def get_cusp_volumes(mfld, verbose = True) :
             assert abs(cusp_nbd.get_displacement(which_cusp = c_idx) - reach) < BIG_COMP_ERR
             ans['cusp_volumes'][c_idx] = cusp_nbd.volume(which_cusp = c_idx)
             if verbose :
-                print '{0} cusp {1} has cusp volume {2}'.format(ans['name'],c_idx,cusp_nbd.volume(which_cusp = c_idx))
+                print('{0} cusp {1} has cusp volume {2}'.format(ans['name'],c_idx,cusp_nbd.volume(which_cusp = c_idx)))
     except :
-        print 'Error: could not build cusp neighborhood for {}'.format(mfld)
+        print('Error: could not build cusp neighborhood for {}'.format(mfld))
     return ans
 
 def get_cusp_volumes_by_name(name, verbose = True) :
@@ -116,7 +84,7 @@ def find_dehn_fillings(mfld, farey_depth = 7, unique = False) :
                 # We found a filling that goes up
                 K_ident = K.identify()
                 if len(K_ident) == 0 :
-                    print 'Could not identify filling {}'.format(K)
+                    print('Could not identify filling {}'.format(K))
                 K_ident_set = set(K_ident)
                 if unique and len(K_ident_set & identities) > 0 :
                     continue

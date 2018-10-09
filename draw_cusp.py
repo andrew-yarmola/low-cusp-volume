@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os, sys, glob
 import tkinter
 from tkinter import *
@@ -415,7 +416,7 @@ class cusp(Tk) :
                     # Keep track of the word and it's representative
                     h_word = h_char + word
                     new_height = horo_image_height_inf(h_gamma, self.cusp_height)
-                    if new_height > 2*self.cusp_height :
+                    if new_height > 1.25*self.cusp_height :
                         sys.stderr.write('Possible giant horoball with word {0} of height {1} with center {2}\nElement:\n'.format(h_word,new_height,h_center))
                         sys.stderr.write(pformat(new_gamma,width=2)+'\n')
                     else :
