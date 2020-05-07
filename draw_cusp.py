@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import os, sys, glob
+import numpy as np
 import tkinter
 from tkinter import *
 from pprint import *
 from cmath import *
-from numpy import floor, ceil, dot
 from tkinter.filedialog import *
+
+np.set_printoptions(suppress=True)
  
 scale = list(map(lambda x : 8 * pow(2, x/6.), range(0,-6,-1)))
 eps = 0.000001
@@ -36,16 +38,16 @@ def dist_btw_balls(c1=0,h1=1,c2=1,h2=1) :
     return real(log(r_sqrd/(h1*h2)))
 
 def get_a(M):
-    return M[0][0]
+    return M[0,0]
 
 def get_b(M):
-    return M[0][1]
+    return M[0,1]
 
 def get_c(M):
-    return M[1][0]
+    return M[1,0]
 
 def get_d(M):
-    return M[1][1]
+    return M[1,1]
 
 def mobius(M,z) :
     return (get_a(M)*z + get_b(M)) / (get_c(M)*z + get_d(M))  
@@ -145,18 +147,18 @@ def get_G(params) :
     l = params['lattice']
     s = params['lox_sqrt']
     p = params['parabolic']
-    return [[p*s*1.j, 1.j/s], [s*1.j, 0.]]
+    return np.array([[p*s*1.j, 1.j/s], [s*1.j, 0.]])
 
 def get_g(params) :
     l = params['lattice']
     s = params['lox_sqrt']
     p = params['parabolic']
-    return [[0., -1.j/s], [-s*1.j, p*s*1.j]]
+    return np.array([[0., -1.j/s], [-s*1.j, p*s*1.j]])
 
 # Give parabolic element with M,N power counts
 def get_T(params, M_pow, N_pow) :
     p = params['lattice']
-    return [[1., p*float(N_pow) + float(M_pow)],[0.,1.]]
+    return np.array([[1., p*float(N_pow) + float(M_pow)],[0.,1.]])
 
 def get_first(word) :
     if len(word) > 0 :
@@ -305,7 +307,7 @@ class cusp(Tk) :
         self.origin = None
         origin_x = float(sys.argv[5]) if len(sys.argv) > 5 else None
         origin_y = float(sys.argv[6]) if len(sys.argv) > 6 else None
-        if origin_y :
+        if origin_y is not None :
             self.origin = [origin_x, origin_y] 
 
         self.params = get_params(self.box)
@@ -362,7 +364,7 @@ class cusp(Tk) :
         g = get_g(self.params)
         M = get_T(self.params,1,0)
         N = get_T(self.params,0,1)
-        self.elements = { 'g' : g, 'G' : G, 'NM' : dot(M,N), 'M' : M, 'N' : N, 'GG' : dot(G,G) }
+        self.elements = { 'g' : g, 'G' : G, 'NM' : np.dot(M,N), 'M' : M, 'N' : N, 'GG' : np.dot(G,G) }
         self.cusp_height = max_horo_height(G)
         self.height_cutoff = self.cusp_height*self.fraction_cutoff
  
@@ -374,7 +376,7 @@ class cusp(Tk) :
         pprint(self.elements,width=2)
 
     def init_horoballs(self) :
-        I = [[1.,0.],[0.,1.]]
+        I = np.array([[1.,0.],[0.,1.]])
         self.horoballs = { 0 : { '' : { 'center' : float("inf"), 'height' : self.cusp_height, 'gamma' : I, 'word' : ''}}}
         # Generate new horoballs
         d = 0
@@ -395,7 +397,7 @@ class cusp(Tk) :
                 # Apply G and g if possible
                 for h_char in valid :
                     h = self.elements[h_char] 
-                    h_gamma = dot(h,gamma)
+                    h_gamma = np.dot(h,gamma)
                     h_center = horo_center_inf(h_gamma)
 
                     # The pojection of h_center to the real axis along lattice
@@ -405,11 +407,11 @@ class cusp(Tk) :
 
                     # Adjustments we make sure to land inside the fundamental domain 
                     if abs(N_len) > pow(2.,-10) :
-                        N_pow = -int(floor(N_len)) if abs(N_len - 1.) > pow(2.,-10) else 0 
+                        N_pow = -int(np.floor(N_len)) if abs(N_len - 1.) > pow(2.,-10) else 0 
                     else :
                         N_pow = 0
                     if abs(M_len) > pow(2.,-10) :
-                        M_pow = -int(floor(M_len)) if abs(M_len - 1.) > pow(2.,-10) else 0 
+                        M_pow = -int(np.floor(M_len)) if abs(M_len - 1.) > pow(2.,-10) else 0 
                     else :
                         M_pow = 0
 
@@ -417,8 +419,11 @@ class cusp(Tk) :
                     h_word = h_char + word
                     new_height = horo_image_height_inf(h_gamma, self.cusp_height)
                     if new_height > 1.25*self.cusp_height :
+                        if new_height < 1000.0 :
+                            sys.stderr.write("Following ball is killer\n")
                         sys.stderr.write('Possible giant horoball with word {0} of height {1} with center {2}\nElement:\n'.format(h_word,new_height,h_center))
-                        sys.stderr.write(pformat(new_gamma,width=2)+'\n')
+                        # sys.stderr.write(pformat(h_gamma,width=1)+'\n')
+                        sys.stderr.write('{}\n'.format(h_gamma))
                     else :
                         if new_height < self.height_cutoff + eps :
                             continue
@@ -427,7 +432,7 @@ class cusp(Tk) :
                         N_word = 'N'*N_pow if N_pow > 0 else 'n'*(-N_pow) 
                         new_word = N_word + new_word
                         T = get_T(self.params, M_pow, N_pow)
-                        new_gamma = dot(T, h_gamma)
+                        new_gamma = np.dot(T, h_gamma)
                         new_center = mobius(T, h_center)
 
                         self.horoballs[d+1][new_word] = { 'center' : new_center, 'height' : new_height, 'gamma' : new_gamma, 'word' : new_word, 'canvas_id' : 0 }
@@ -438,8 +443,8 @@ class cusp(Tk) :
                         r = self.horo_center_cutoff
                         horiz_range = quad_sol(1., 2.*x, norm(new_center) - r**2)
                         vert_range = quad_sol(norm(lattice), 2*(x*real(lattice) + y*imag(lattice)), norm(new_center) - r**2)
-                        horiz_range = (int(floor(real(horiz_range[0]))), int(ceil(real(horiz_range[1]))))
-                        vert_range = (int(floor(real(vert_range[0]))), int(ceil(real(vert_range[1]))))
+                        horiz_range = (int(np.floor(real(horiz_range[0]))), int(np.ceil(real(horiz_range[1]))))
+                        vert_range = (int(np.floor(real(vert_range[0]))), int(np.ceil(real(vert_range[1]))))
                         for n in range(*vert_range) :
                             for m in range(*horiz_range) :
                                 if m != 0 or n != 0 :
@@ -449,7 +454,7 @@ class cusp(Tk) :
                                     shift_center = mobius(T, h_center)
                                     # Make sure the horoball images in next depth are not too small
                                     if abs(shift_center) < r :
-                                        shift_gamma = dot(T, h_gamma)
+                                        shift_gamma = np.dot(T, h_gamma)
                                         M_word = 'M'*shift_M_pow if shift_M_pow > 0 else 'm'*(-shift_M_pow) 
                                         shift_word = M_word + h_word
                                         N_word = 'N'*shift_N_pow if shift_N_pow > 0 else 'n'*(-shift_N_pow) 
@@ -529,12 +534,15 @@ class cusp(Tk) :
         x = self.origin[0] + self.factor*real(center)
         y = self.origin[1] - self.factor*imag(center) # Flip coordinate system 
         r = self.factor*height/2.
-        #print('({0},{1},{2})'.format(x,y,r))
+        # h_e2 = self.cusp_height/1.08
+        # r_e2 = self.factor * real(sqrt(h_e2 * height))
+        # print('({0},{1},{2})'.format(x,y,r_e2))
 
         object_id = self.canvas.create_oval(x-r,y-r,x+r,y+r)
         ball['canvas_id'] = object_id
         ball['selected'] = False
         self.object_dict[object_id] = ball
+        #self.canvas.create_oval(x-r_e2,y-r_e2,x+r_e2,y+r_e2)
 
     def draw_cusp(self) :
         lattice = self.params['lattice']

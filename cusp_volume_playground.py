@@ -13,7 +13,7 @@ COMP_ERR = pow(2,-RR(100))
 BIG_COMP_ERR = pow(2,-RR(20))
 
 def get_cusp_volumes(mfld, verbose = True) :
-    ans = {'manifold' : mfld, 'name' : '{}'.format(mfld), 'cusp_volumes' : {}}
+    ans = {'manifold' : mfld, 'name' : '{}'.format(mfld), 'cusp_volumes' : {}, 'cusp_translations' : {}}
     try :
         cusp_nbd = mfld.cusp_neighborhood()
         for c_idx in range(cusp_nbd.num_cusps()) :
@@ -24,6 +24,7 @@ def get_cusp_volumes(mfld, verbose = True) :
             cusp_nbd.set_displacement(reach, which_cusp = c_idx)
             assert abs(cusp_nbd.get_displacement(which_cusp = c_idx) - reach) < BIG_COMP_ERR
             ans['cusp_volumes'][c_idx] = cusp_nbd.volume(which_cusp = c_idx)
+            ans['cusp_translations'][c_idx] = cusp_nbd.translations(which_cusp = c_idx)
             if verbose :
                 print('{0} cusp {1} has cusp volume {2}'.format(ans['name'],c_idx,cusp_nbd.volume(which_cusp = c_idx)))
     except :

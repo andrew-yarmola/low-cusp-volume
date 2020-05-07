@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os, sys, glob, re
 from tkinter import *
 from pprint import *
@@ -211,11 +212,11 @@ def get_gen(params) :
     m = get_T(params,-1,0)
     N = get_T(params,0,1)
     n = get_T(params,0,-1)
+    # print({ 'g' : g, 'G' : G, 'M' : M, 'm' : m, 'N' : N, 'n' : n })
     return { 'g' : g, 'G' : G, 'M' : M, 'm' : m, 'N' : N, 'n' : n }
 
 def get_mob_from_gen(word,elem) :
     w = [[1.,0.],[0.,1.]]
-    g = get_g
     for gen in word :
         w = dot(w,elem[gen])
     return w
@@ -310,6 +311,7 @@ class word_diagram(Tk) :
 
     def draw_lattice(self) :
         points_to_style = {(0.,0.) : 'black', self.ball_coord('G') : ''}
+        # print(self.ball_coord('G'))
         size = 4
         L = self.ball_coord('Ng')
         for v in points_to_style :
